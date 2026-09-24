@@ -1,4 +1,6 @@
-const API_BASE = '/api/rooms';
+const RAW_URL = import.meta.env.VITE_API_URL || '';
+const BASE_URL = RAW_URL.replace(/\/+$/, '');
+const API_BASE = `${BASE_URL}/api/rooms`;
 
 export async function createRoom(mode = 'multiplayer', aiDifficulty = 'medium', playerName = 'Player A') {
   const res = await fetch(API_BASE, {

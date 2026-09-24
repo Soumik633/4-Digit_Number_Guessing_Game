@@ -13,8 +13,10 @@ export function useGameSocket(roomId, playerId, playerName = '') {
   useEffect(() => {
     if (!roomId) return;
 
-    // Connect to server
-    const socket = io(window.location.origin, {
+    // Connect to server (supports VITE_API_URL for production or window.location.origin)
+    const rawUrl = import.meta.env.VITE_API_URL || window.location.origin;
+    const socketServerUrl = rawUrl.replace(/\/+$/, '');
+    const socket = io(socketServerUrl, {
       path: '/socket.io',
       transports: ['websocket', 'polling'],
       reconnectionAttempts: 10,
