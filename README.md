@@ -13,46 +13,223 @@ Each player secretly selects a 4-digit code composed of **non-repeating digits**
 
 The first player to reach **Positions Matched = 4** cracks the code and wins!
 
-### Key Features
-- 🌐 **Real-Time Multiplayer**: Instant room creation, shareable invite links (`/join/<ROOM_ID>`), and server-enforced private dashboards (the opponent's secret is never sent to the client until game over).
+### ✨ Key Features
+- 🌐 **Real-Time Multiplayer**: Instant room creation, shareable invite links (`/join/<ROOM_ID>`), and server-enforced private dashboards (the opponent's secret code is never transmitted until game over).
 - 🤖 **Solo Mode vs Intelligent AI**:
   - **Easy**: Random non-repeating guesses.
   - **Medium**: Eliminates impossible numbers based on past clues, guessing uniformly from consistent candidates.
   - **Hard**: Donald Knuth-style Minimax information entropy solver (solves within 5 guesses).
-- 👥 **Dual Side-by-Side View**: Local pass-and-play / presentation mode matching the infographic mockup.
-- 🎨 **Modern Cyber Aesthetic**: Deep navy theme (`#0B0C1A`), neon green (`#39FF88`), amber (`#FFD23F`), rose (`#FF4F6E`), Google Fonts (*Orbitron*, *JetBrains Mono*, *Inter*), flip-card animations, Web Audio API sound effects, and celebratory confetti.
+- 👥 **Dual Side-by-Side View**: Local pass-and-play and presentation mode matching the infographic design.
+- 🎨 **Modern Cyber Aesthetic**: Deep navy theme (`#0B0C1A`), neon green (`#39FF88`), amber (`#FFD23F`), rose (`#FF4F6E`), Google Fonts (*Orbitron*, *JetBrains Mono*, *Inter*), card flip animations, Web Audio API sound effects, and confetti celebrations.
+- 🐳 **Docker & Production Ready**: Dockerfiles, Docker Compose, automated health checks, flexible CORS configuration, and native deployment configs for **Railway**, **Render**, **Heroku**, and **Netlify**.
 
 ---
 
 ## 🚀 Quick Start
 
-### 1. Backend (FastAPI + Socket.IO)
+Choose your preferred way to run the game locally:
+
+### Option A: One-Click Windows Launcher (Fastest)
+
+If you are on Windows, simply double-click **`start.bat`** from the root folder.  
+It automatically starts both the FastAPI backend and Vite frontend dev servers in separate windows.
+
+```cmd
+start.bat
+```
+- Frontend: [http://localhost:5173](http://localhost:5173)
+- Backend: [http://localhost:8000](http://localhost:8000)
+- API Docs: [http://localhost:8000/docs](http://localhost:8000/docs)
+
+---
+
+### Option B: Manual Local Setup
+
+#### 1. Backend (FastAPI + Socket.IO)
 
 ```bash
 cd backend
-python -m pip install -r requirements.txt
+
+# Create virtual environment (optional but recommended)
+python -m venv venv
+# On Windows: venv\Scripts\activate
+# On Unix/macOS: source venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# (Optional) Copy environment template
+copy .env.example .env      # On Windows
+# cp .env.example .env      # On Unix/macOS
+
+# Run development server
 python run.py
 ```
-The backend server will start on **http://localhost:8000**.
+The backend server runs on **http://localhost:8000**.
 
-### 2. Frontend (React + Vite)
+#### 2. Frontend (React + Vite)
 
 ```bash
 cd frontend
+
+# Install dependencies
 npm install
+
+# (Optional) Copy environment template
+copy .env.example .env      # On Windows
+# cp .env.example .env      # On Unix/macOS
+
+# Start dev server
 npm run dev
 ```
-The frontend dev server will launch on **http://localhost:5173**.
+The frontend dev server launches on **http://localhost:5173**.
+
+---
+
+### Option C: Docker & Docker Compose
+
+Run the entire application (both backend and frontend) inside isolated Docker containers:
+
+```bash
+# Build and start all services
+docker compose up --build
+
+# Or run in detached mode
+docker compose up -d
+```
+
+- Frontend: [http://localhost:5173](http://localhost:5173)
+- Backend API: [http://localhost:8000](http://localhost:8000)
+- Health Check: [http://localhost:8000/health](http://localhost:8000/health)
+
+To stop the containers:
+```bash
+docker compose down
+```
+
+---
+
+## ⚙️ Environment Variables
+
+Both `backend` and `frontend` contain pre-configured `.env.example` templates.
+
+### Backend (`backend/.env`)
+
+| Variable | Default | Description |
+|---|---|---|
+| `HOST` | `0.0.0.0` | Host address to bind the server |
+| `PORT` | `8000` | Port number (automatically assigned by Railway / Heroku in cloud) |
+| `FRONTEND_URL` | `http://localhost:5173` | Allowed frontend origin(s) for CORS. Can be a single origin or comma-separated list (e.g. `https://your-site.netlify.app,http://localhost:5173`). Falls back to permissive mode if unset. |
+| `ENVIRONMENT` | `development` | Set to `production` in live deployments to disable auto-reload |
+| `RELOAD` | `true` (dev) / `false` (prod) | Explicit toggle for uvicorn hot reloading |
+
+### Frontend (`frontend/.env`)
+
+| Variable | Default | Description |
+|---|---|---|
+| `VITE_API_URL` | `http://localhost:8000` | Backend API and Socket.IO base URL for production builds |
+
+---
+
+## ☁️ Deployment Guide
+
+### Deploy Backend (Railway / Render / Heroku / Cloud Run)
+
+#### Railway (Recommended)
+1. Fork or push this repository to GitHub.
+2. Link your repository in [Railway](https://railway.app/).
+3. Railway automatically detects **`backend/railway.json`** with the **NIXPACKS** builder.
+4. Set root directory to `backend` (if deploying backend separately).
+5. Add environment variable:
+   - `FRONTEND_URL`: Your deployed frontend URL (e.g., `https://your-site.netlify.app`)
+6. Health checks are automatically handled via `/health`.
+
+#### Render / Heroku / Dokku
+The repository includes a production **`Procfile`** and root **`main.py`** entry point:
+```
+web: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+```
+You can also launch via `uvicorn main:app --host 0.0.0.0 --port $PORT`.
+
+#### Docker Deployment
+The backend includes a self-contained **`backend/Dockerfile`**:
+```bash
+cd backend
+docker build -t number-hunt-backend .
+docker run -p 8000:8000 -e PORT=8000 number-hunt-backend
+```
+
+---
+
+### Deploy Frontend (Netlify / Vercel / Cloudflare Pages)
+
+1. Connect your repository to **Netlify** or **Vercel**.
+2. Configure build settings:
+   - **Base directory**: `frontend`
+   - **Build command**: `npm run build`
+   - **Publish directory**: `frontend/dist` (or `dist` if base directory is `frontend`)
+3. Add environment variable:
+   - `VITE_API_URL`: Your deployed backend URL (e.g., `https://your-backend.up.railway.app`)
+
+---
+
+### Single-Container Fullstack Option
+
+FastAPI is configured to automatically serve the compiled frontend SPA bundle if `frontend/dist` is present, while preserving all `/api`, `/socket.io`, `/health`, and `/docs` routes.
+```bash
+# 1. Build frontend
+cd frontend
+npm run build
+
+# 2. Run backend (now serves static assets + API + WebSockets)
+cd ../backend
+python run.py
+```
+
+---
+
+## 📡 API & WebSocket Reference
+
+### Health Endpoints
+- `GET /health`: Standard lightweight health probe for cloud monitoring (Railway / Render / k8s).
+- `GET /api/health`: Application status indicator returning `{"status": "ok", "app": "Number Hunt"}`.
+
+### REST Endpoints
+- `POST /api/rooms`: Create a new game room (`mode`, `ai_difficulty`, `player_name`).
+- `GET /api/rooms/{room_id}`: Fetch status and metadata for a specific room.
+- `POST /api/rooms/{room_id}/join`: Join an existing room with a player name.
+- `GET /docs`: Interactive Swagger UI documentation.
+- `GET /redoc`: ReDoc interactive documentation.
+
+### Socket.IO Real-Time Events
+- **Client to Server**:
+  - `join_room` (`room_id`, `player_id`, `player_name`): Connect to a room.
+  - `set_secret` (`room_id`, `secret_code`): Lock in a 4-unique-digit secret code.
+  - `make_guess` (`room_id`, `guess_code`): Submit a turn guess.
+  - `play_again` (`room_id`): Reset the room for a rematch.
+- **Server to Client**:
+  - `sync_state`: Real-time state synchronization tailored to each player's private view.
+  - `player_joined`: Broadcasts when opponent enters.
+  - `game_started`: Signals that both players set their secrets and guessing begins.
+  - `guess_result`: Delivers feedback (`digits_matched`, `positions_matched`).
+  - `game_over`: Announces the winner and reveals opponent secrets.
+  - `error`: Friendly validation or flow error messages.
 
 ---
 
 ## 🧪 Running Tests
 
-To run the full suite of backend unit tests (validator, feedback math, and AI logic):
+Run the full suite of backend unit tests (code validator, feedback mathematics, and AI algorithms):
 
 ```bash
 cd backend
 python -m unittest discover tests
+```
+
+To verify the frontend build:
+```bash
+cd frontend
+npm run build
 ```
 
 ---
@@ -62,60 +239,75 @@ python -m unittest discover tests
 ```
 Number Hunt/
 ├── backend/
+│   ├── .env.example               # Backend environment variables template
+│   ├── Dockerfile                 # Production backend container definition
+│   ├── Procfile                   # Process file for Heroku / Render deployment
+│   ├── railway.json               # Railway Nixpacks deployment config
+│   ├── main.py                    # ASGI root entry point (uvicorn main:app)
+│   ├── run.py                     # Local & production launcher script
+│   ├── requirements.txt           # Python dependencies (FastAPI, uvicorn[standard], socketio)
 │   ├── app/
-│   │   ├── config.py                  # Server configuration
-│   │   ├── main.py                    # FastAPI app + Socket.IO mount
+│   │   ├── config.py              # Server configuration & dynamic CORS handling
+│   │   ├── main.py                # FastAPI app, health checks, & SPA fallback mount
 │   │   ├── game_logic/
-│   │   │   ├── validator.py           # 4-unique-digit validation (5,040 codes)
-│   │   │   ├── feedback.py            # Digits & Positions Matched math
-│   │   │   └── ai_player.py           # Easy / Medium / Hard AI opponent
+│   │   │   ├── validator.py       # 4-unique-digit validation (5,040 permutations)
+│   │   │   ├── feedback.py        # Digits & Positions Matched calculation
+│   │   │   └── ai_player.py       # Easy / Medium / Hard (Minimax) AI opponents
 │   │   ├── models/
-│   │   │   ├── game.py                # GameSession, Player dataclasses
-│   │   │   └── schemas.py             # Pydantic request/response models
+│   │   │   ├── game.py            # GameSession & Player dataclasses
+│   │   │   └── schemas.py         # Pydantic request/response validation schemas
 │   │   ├── routes/
-│   │   │   └── rooms.py               # REST endpoints for room creation & joining
+│   │   │   └── rooms.py           # REST endpoints for room creation & joining
 │   │   ├── sockets/
-│   │   │   └── events.py              # WebSocket real-time event handlers
+│   │   │   └── events.py          # Real-time WebSocket event handlers
 │   │   └── store/
-│   │       └── session_store.py       # In-memory room session registry
-│   ├── tests/
-│   │   ├── test_validator.py          # Validation tests
-│   │   ├── test_feedback.py           # Clue & scoring tests
-│   │   └── test_ai.py                 # AI algorithm tests
-│   ├── requirements.txt
-│   └── run.py                         # Launcher script
+│   │       └── session_store.py   # In-memory room session registry
+│   └── tests/
+│       ├── test_validator.py      # Code validation unit tests
+│       ├── test_feedback.py       # Feedback scoring unit tests
+│       └── test_ai.py             # AI algorithm unit tests
 │
 ├── frontend/
-│   ├── public/
-│   │   └── index.html
-│   ├── src/
-│   │   ├── components/
-│   │   │   ├── Dashboard.jsx          # Private player dashboard
-│   │   │   ├── PlayerColumn.jsx       # My guesses table
-│   │   │   ├── OpponentColumn.jsx     # Opponent guesses table
-│   │   │   ├── GuessInput.jsx         # 4-digit input with duplicate validation
-│   │   │   ├── SecretEntry.jsx        # Setup-phase secret selector
-│   │   │   ├── TurnBanner.jsx         # Active turn status indicator
-│   │   │   └── WinModal.jsx           # Victory fanfare & code reveal
-│   │   ├── hooks/
-│   │   │   └── useGameSocket.js       # Real-time WebSocket hook
-│   │   ├── pages/
-│   │   │   ├── Home.jsx               # Landing page with mode selection & rules
-│   │   │   ├── GameRoom.jsx           # Multiplayer room view
-│   │   │   ├── SinglePlayer.jsx       # Solo vs AI view
-│   │   │   └── DualView.jsx           # Side-by-side local demo view
-│   │   ├── styles/
-│   │   │   ├── theme.css              # Cyber navy design tokens
-│   │   │   └── animations.css         # Pulses, card flips, win pops
-│   │   ├── utils/
-│   │   │   └── audio.js               # Web Audio API synthesizer
-│   │   ├── App.jsx
-│   │   ├── main.jsx
-│   │   └── api.js                     # REST client
-│   ├── package.json
-│   └── vite.config.js
+│   ├── .env.example               # Frontend environment variables template
+│   ├── Dockerfile                 # Multi-stage Nginx container definition
+│   ├── index.html                 # HTML entry point with Orbitron & Inter fonts
+│   ├── package.json               # Node.js dependencies & scripts
+│   ├── vite.config.js             # Vite config with dev API / WebSocket proxy
+│   ├── public/                    # Static assets & icons
+│   └── src/
+│       ├── components/
+│       │   ├── Dashboard.jsx      # Private player dashboard layout
+│       │   ├── PlayerColumn.jsx   # Guess history table with clue chips
+│       │   ├── OpponentColumn.jsx # Opponent guess tracking table
+│       │   ├── GuessInput.jsx     # 4-digit input with real-time duplicate validation
+│       │   ├── SecretEntry.jsx    # Secret code picker with quick randomize
+│       │   ├── TurnBanner.jsx     # Active turn indicator and status messages
+│       │   └── WinModal.jsx       # Victory / defeat modal with confetti & rematch
+│       ├── hooks/
+│       │   └── useGameSocket.js   # Real-time Socket.IO hook with automatic state sync
+│       ├── pages/
+│       │   ├── Home.jsx           # Landing page with mode selection & rules
+│       │   ├── GameRoom.jsx       # Real-time online multiplayer room
+│       │   ├── SinglePlayer.jsx   # Solo vs AI match room
+│       │   └── DualView.jsx       # Side-by-side local pass-and-play demo view
+│       ├── styles/
+│       │   ├── theme.css          # Cyber navy CSS tokens & components
+│       │   └── animations.css     # Flip cards, glowing pulses, and entrance effects
+│       ├── utils/
+│       │   └── audio.js           # Web Audio API procedural sound synthesizer
+│       ├── api.js                 # REST client for rooms API
+│       ├── App.jsx                # Application root with client-side routing
+│       └── main.jsx               # React DOM entry point
 │
-├── docker-compose.yml
-├── README.md
-└── .gitignore
+├── docker-compose.yml             # Multi-service local Docker Compose orchestration
+├── start.bat                      # One-click Windows starter script
+├── .gitignore                     # Git ignore rules (virtualenvs, node_modules, .env)
+├── LICENSE                        # MIT License
+└── README.md                      # Comprehensive project documentation
 ```
+
+---
+
+## 📜 License
+
+This project is licensed under the [MIT License](LICENSE).

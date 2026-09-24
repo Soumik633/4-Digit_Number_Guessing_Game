@@ -27,11 +27,16 @@ fastapi_app.add_middleware(
 # Mount REST API routers
 fastapi_app.include_router(rooms_router)
 
+@fastapi_app.get("/health")
+async def health():
+    """Standard health check endpoint for Railway and deployment monitors."""
+    return {"status": "ok"}
+
 @fastapi_app.get("/api/health")
 async def health_check():
     return {"status": "ok", "app": APP_NAME}
 
-# Check if frontend built bundle exists and serve it
+# Check if frontend built bundle exists and serve it (used for single-container local deployments)
 frontend_dist_dir = os.path.abspath(
     os.path.join(os.path.dirname(__file__), "..", "..", "frontend", "dist")
 )
@@ -41,8 +46,12 @@ if os.path.exists(frontend_dist_dir):
 
     @fastapi_app.get("/{full_path:path}")
     async def serve_spa(full_path: str):
-        # Don't intercept API or socket.io routes
-        if full_path.startswith("api") or full_path.startswith("socket.io"):
+        # Don't intercept API, socket.io, health, docs, or schema routes
+        if (
+            full_path.startswith("api")
+            or full_path.startswith("socket.io")
+            or full_path in ("health", "docs", "redoc", "openapi.json")
+        ):
             return None
         file_candidate = os.path.join(frontend_dist_dir, full_path)
         if os.path.isfile(file_candidate):

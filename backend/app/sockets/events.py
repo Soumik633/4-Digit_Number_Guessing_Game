@@ -1,6 +1,7 @@
 import asyncio
 import socketio
 from typing import Dict, Any, Optional
+from ..config import CORS_ORIGINS
 from ..store.session_store import session_store
 from ..game_logic.validator import validate_code
 from ..game_logic.feedback import calculate_feedback
@@ -8,7 +9,7 @@ from ..game_logic.feedback import calculate_feedback
 # Create Async Socket.IO Server
 sio = socketio.AsyncServer(
     async_mode="asgi",
-    cors_allowed_origins="*"
+    cors_allowed_origins="*" if "*" in CORS_ORIGINS else CORS_ORIGINS
 )
 
 # Sid mapping to (room_id, player_id)

@@ -11,5 +11,11 @@ if hasattr(sys.stdout, "reconfigure"):
 from app.config import HOST, PORT
 
 if __name__ == "__main__":
-    print(f"Starting Number Hunt Backend on http://localhost:{PORT}")
-    uvicorn.run("app.main:app", host=HOST, port=PORT, reload=True)
+    is_prod = os.getenv("ENVIRONMENT", "").lower() in ("production", "prod") or (
+        os.getenv("RAILWAY_ENVIRONMENT") is not None
+    )
+    default_reload = "false" if is_prod else "true"
+    reload_enabled = os.getenv("RELOAD", default_reload).lower() in ("true", "1", "yes")
+
+    print(f"Starting Number Hunt Backend on http://{HOST}:{PORT} (reload={reload_enabled})")
+    uvicorn.run("app.main:app", host=HOST, port=PORT, reload=reload_enabled)
