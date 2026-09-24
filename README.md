@@ -164,12 +164,15 @@ docker run -p 8000:8000 -e PORT=8000 number-hunt-backend
 ### Deploy Frontend (Netlify / Vercel / Cloudflare Pages)
 
 1. Connect your repository to **Netlify** or **Vercel**.
-2. Configure build settings:
+2. **Zero-Configuration with `netlify.toml`**:  
+   Netlify automatically detects the root [`netlify.toml`](file:///c:/Users/Asus/Desktop/Number%20Hunt/netlify.toml) configuration:
    - **Base directory**: `frontend`
    - **Build command**: `npm run build`
-   - **Publish directory**: `frontend/dist` (or `dist` if base directory is `frontend`)
+   - **Publish directory**: `dist`
+   - **SPA Redirects**: Handled automatically via `/* -> /index.html 200` in both [`netlify.toml`](file:///c:/Users/Asus/Desktop/Number%20Hunt/netlify.toml) and [`frontend/public/_redirects`](file:///c:/Users/Asus/Desktop/Number%20Hunt/frontend/public/_redirects) (ensuring room invite links like `/join/:roomId` work seamlessly on page reload).
 3. Add environment variable:
-   - `VITE_API_URL`: Your deployed backend URL (e.g., `https://your-backend.up.railway.app`)
+   - `VITE_API_URL`: Your deployed Railway backend URL (e.g., `https://YOUR-RAILWAY-DOMAIN.up.railway.app` without trailing slash).
+4. Deploy the site!
 
 ---
 
@@ -273,7 +276,9 @@ Number Hunt/
 │   ├── index.html                 # HTML entry point with Orbitron & Inter fonts
 │   ├── package.json               # Node.js dependencies & scripts
 │   ├── vite.config.js             # Vite config with dev API / WebSocket proxy
-│   ├── public/                    # Static assets & icons
+│   ├── public/
+│   │   ├── _redirects             # Netlify SPA client-side route redirects
+│   │   └── favicon.svg            # Static assets & icons
 │   └── src/
 │       ├── components/
 │       │   ├── Dashboard.jsx      # Private player dashboard layout
@@ -300,6 +305,7 @@ Number Hunt/
 │       └── main.jsx               # React DOM entry point
 │
 ├── docker-compose.yml             # Multi-service local Docker Compose orchestration
+├── netlify.toml                   # Netlify configuration (base, build, SPA redirects)
 ├── start.bat                      # One-click Windows starter script
 ├── .gitignore                     # Git ignore rules (virtualenvs, node_modules, .env)
 ├── LICENSE                        # MIT License
