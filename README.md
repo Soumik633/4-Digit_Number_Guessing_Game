@@ -138,11 +138,10 @@ Both `backend` and `frontend` contain pre-configured `.env.example` templates.
 #### Railway (Recommended)
 1. Fork or push this repository to GitHub.
 2. Link your repository in [Railway](https://railway.app/).
-3. Railway automatically detects **`backend/railway.json`** with the **NIXPACKS** builder.
-4. Set root directory to `backend` (if deploying backend separately).
-5. Add environment variable:
-   - `FRONTEND_URL`: Your deployed frontend URL (e.g., `https://your-site.netlify.app`)
-6. Health checks are automatically handled via `/health`.
+3. Railway automatically detects the root [`railway.json`](file:///c:/Users/Asus/Desktop/Number%20Hunt/railway.json) and [`Dockerfile`](file:///c:/Users/Asus/Desktop/Number%20Hunt/Dockerfile) (builds seamlessly whether deployed from repository root `/` or with Root Directory set to `/backend`).
+4. In **Networking**: Click **Generate Domain** to get your public backend URL.
+5. In **Variables**: Add `FRONTEND_URL` with your Netlify site URL (e.g., `https://your-site.netlify.app`).
+6. Health checks are automatically monitored via `/health`.
 
 #### Render / Heroku / Dokku
 The repository includes a production **`Procfile`** and root **`main.py`** entry point:
@@ -304,8 +303,12 @@ Number Hunt/
 │       ├── App.jsx                # Application root with client-side routing
 │       └── main.jsx               # React DOM entry point
 │
+├── .dockerignore                  # Docker build context exclusions
+├── Dockerfile                     # Root container build definition for Railway
 ├── docker-compose.yml             # Multi-service local Docker Compose orchestration
 ├── netlify.toml                   # Netlify configuration (base, build, SPA redirects)
+├── Procfile                       # Root process file for Heroku / Render / Railway
+├── railway.json                   # Root Railway Dockerfile deployment config
 ├── start.bat                      # One-click Windows starter script
 ├── .gitignore                     # Git ignore rules (virtualenvs, node_modules, .env)
 ├── LICENSE                        # MIT License
